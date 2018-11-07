@@ -1,2 +1,9 @@
 *.class
 *.log
+target/*.*
+recfun/.idea
+recfun/project
+recfun/scalastyle
+recfun/target
+recfun/assignment.sbt
+recfun/build.sbt
