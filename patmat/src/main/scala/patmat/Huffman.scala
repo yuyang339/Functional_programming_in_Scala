@@ -78,15 +78,12 @@ object Huffman {
    *   }
    */
     def times(chars: List[Char]): List[(Char, Int)] = {
-      val m = Map[Char, Int]()
-      for(x <- chars){
-        m.update(x, m(x)+1)
+      def incr(acc:Map[Char, Int], c:Char) = {
+        val count = (acc get c).getOrElse(0) + 1
+        acc + ((c, count))
       }
-      var l = List[(Char, Int)]()
-      for((k, v) <- m){
-         l = l ::: List((k,v))
-      }
-      return l
+
+      (Map[Char,Int]() /: chars)(incr).iterator.toList
     }
   
   /**
@@ -97,17 +94,13 @@ object Huffman {
    * of a leaf is the frequency of the character.
    */
     def makeOrderedLeafList(freqs: List[(Char, Int)]): List[Leaf] = {
-      var l = List[Leaf]()
-      for((k,v) <- freqs.sortWith(_._2<_._2)){
-        l = l ::: List(Leaf(k, v))
-      }
-      return l
+      freqs.sortWith(_._2<_._2).map(x => Leaf(x._1, x._2))
     }
   
   /**
    * Checks whether the list `trees` contains only one single code tree.
    */
-    def singleton(trees: List[CodeTree]): Boolean = if (trees.length == 1) true else false
+    def singleton(trees: List[CodeTree]): Boolean = if (trees.size == 1) true else false
   
   /**
    * The parameter `trees` of this function is a list of code trees ordered
@@ -170,10 +163,16 @@ object Huffman {
    * the resulting list of characters.
    */
     def decode(tree: CodeTree, bits: List[Bit]): List[Char] = {
-      tree match {
-        case f: Fork => if (bits.head == 0) decode(f.left, bits.tail) else decode(f.right, bits.tail)
+      /*tree match {
         case f: Leaf => if (bits.isEmpty) List(f.char) else f.char :: decode(tree, bits)
-      }
+        case f: Fork => if (bits.head == 0) decode(f.left, bits.tail) else decode(f.right, bits.tail)
+      }*/
+
+     def traverse(remaining: CodeTree, bits: List[Bit]): List[Char] = remaining match {
+       case Leaf(c, _) => if (bits.isEmpty) List(c) else c :: traverse(tree, bits)
+       case Fork(left, right, _, _) => if (bits.head == 0) traverse(left, bits.tail) else traverse(right, bits.tail)
+     }
+      traverse(tree, bits)
     }
   
   /**
